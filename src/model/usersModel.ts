@@ -5,7 +5,6 @@ import { connection } from "./database";
 import { configWallet } from "../../config/config";
 
 export type TData = {
-  id?: number;
   name: string;
   email: string;
   password: string;
@@ -29,7 +28,8 @@ export class UserModel {
     ).join()}) VALUES (${Object.values(configWallet).join()})`;
     let walletId: number;
     try {
-      const result: ResultSetHeader = await connection.query(walletSql);
+      const result = await connection.query<ResultSetHeader>(walletSql);
+      
       if (!result.insertId) {
         throw new Error("Failed to retrieve wallet ID after creation");
       } else {
@@ -57,9 +57,7 @@ export class UserModel {
 
   static async getUser(id: number): Promise<User | null> {
     const sql = "SELECT * FROM users WHERE id=?";
-    const [rows]: [User, any] = await connection.query(sql, [id]);
-    const user = rows;
-    console.log("");
+    const [user] = await connection.query<User[]>(sql, [id]); 
 
     if (!user.id) {
       console.log(`User with id ${id} not found`);
@@ -70,8 +68,7 @@ export class UserModel {
 
   static async existUser(email: string): Promise<boolean> {
     const sql = "SELECT * FROM users WHERE email=?";
-    const [rows]: [RowDataPacket[], any] = await connection.query(sql, [email]);
-    const user = rows;
+    const [user] = await connection.query<User[]>(sql, [email]);
     return !user ? true : false;
   }
 

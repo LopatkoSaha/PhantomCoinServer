@@ -1,16 +1,22 @@
 import { RowDataPacket, ResultSetHeader } from "mysql2/promise";
 import { connection } from "./database"; // Подключение к базе данных
-import { configWallet } from "../../config/config";
+import { configWallet, configCoins } from "../../config/config";
+
+type TColumnNames = RowDataPacket & {COLUMN_NAME: string};
 
 async function runMigrations() {
+
   const containWallet = Object.entries(configWallet).map(([name, value]) => {
+    return `${name} DECIMAL(18, 8) DEFAULT ${value}`;
+  });
+  const currentCoins = Object.entries(configCoins).map(([name, value]) => {
     return `${name} DECIMAL(18, 8) DEFAULT ${value}`;
   });
 
   try {
     // 1. Проверка и создание базы данных
-    await connection.query("CREATE DATABASE IF NOT EXISTS phantom_coin");
-    await connection.query("USE phantom_coin"); // Переход в базу данных
+    await connection.query("CREATE DATABASE IF NOT EXISTS phantomcoin");
+    await connection.query("USE phantomcoin"); // Переход в базу данных
 
     // 2. Проверка и создание таблицы wallets
     await connection.query(`
@@ -21,7 +27,27 @@ async function runMigrations() {
       );
     `);
 
-    // 3. Проверка и создание таблицы users
+    // 3. Проверка наличия всех колонок в таблице wallets
+    const columnsWalletsDb = await connection.query<TColumnNames[]>(`
+      SELECT COLUMN_NAME
+      FROM information_schema.COLUMNS
+      WHERE TABLE_SCHEMA = 'phantomcoin'
+        AND TABLE_NAME = 'wallets'
+    `)
+    const currentWalletColumnNames = columnsWalletsDb.map((item) => {
+        return item.COLUMN_NAME
+    });
+    // Добавить колонку если не существует
+    Object.keys(configCoins).forEach(async (item) => {
+      if(!currentWalletColumnNames.includes(item)){
+        await connection.query(`
+          ALTER TABLE wallets
+          ADD COLUMN ${item} DECIMAL(18, 8) DEFAULT 0;  
+        `)
+      }
+    })
+
+    // 4. Проверка и создание таблицы users
     await connection.query(`
       CREATE TABLE IF NOT EXISTS users (
         id INT AUTO_INCREMENT PRIMARY KEY,
@@ -33,6 +59,48 @@ async function runMigrations() {
         FOREIGN KEY (walletId) REFERENCES wallets(id) ON DELETE SET NULL
       );
     `);
+
+    // 5. Проверка и создание таблицы courses
+    await connection.query(`
+      CREATE TABLE IF NOT EXISTS courses (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        ${currentCoins.join()},
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
+    `);
+
+    // 6. Проверка наличия всех колонок в таблице courses
+    const columnsCoursesDb = await connection.query<TColumnNames[]>(`
+      SELECT COLUMN_NAME
+      FROM information_schema.COLUMNS
+      WHERE TABLE_SCHEMA = 'phantomcoin'
+        AND TABLE_NAME = 'courses'
+    `)
+    const currentColumnNames = columnsCoursesDb.map((item) => {
+        return item.COLUMN_NAME
+    });
+    // Добавить колонку если не существует
+    Object.keys(configCoins).forEach(async (item) => {
+      if(!currentColumnNames.includes(item)){
+        await connection.query(`
+          ALTER TABLE courses
+          ADD COLUMN ${item} DECIMAL(18, 8) DEFAULT 0;  
+        `)
+      }
+    })
+    
+    // Удалить колонку если лишняя
+    // currentColumnNames.forEach(async (item) => {
+    //   if(item !== 'id' && item !== 'created_at' && !item.includes(Object.keys(configCoins))){
+    //     await connection.query('USE phantomcoin');
+    //     await connection.query(`
+    //       ALTER TABLE courses
+    //       DROP COLUMN ${item};  
+    //     `)
+    //   }
+    // })
+    
+    
 
     console.log("Migration completed successfully.");
   } catch (error) {

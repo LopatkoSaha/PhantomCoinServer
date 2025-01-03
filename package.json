@@ -3,9 +3,11 @@
   "version": "1.0.0",
   "main": "index.ts",
   "scripts": {
-    "start": "tsc --watch && node src/index.ts",
+    "start": "tsc && node src/index.ts",
     "dev": "nodemon src/index.ts",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "up": "docker compose up -d",
+    "down": "docker compose down"
   },
   "keywords": [],
   "author": "lopatkoaleksandr2@gmail.com",
@@ -15,6 +17,7 @@
     "argon2": "^0.41.1",
     "axios": "^1.6.8",
     "bcrypt": "^5.1.1",
+    "connect": "^3.7.0",
     "cors": "^2.8.5",
     "express": "^4.21.1",
     "jsonwebtoken": "^9.0.2",
@@ -25,10 +28,11 @@
   },
   "devDependencies": {
     "@types/bcrypt": "^5.0.2",
+    "@types/connect": "^3.4.38",
     "@types/cors": "^2.8.17",
     "@types/express": "^5.0.0",
     "@types/jsonwebtoken": "^9.0.6",
-    "@types/node": "^22.10.1",
+    "@types/node": "^22.10.2",
     "@types/ws": "^8.5.10",
     "ts-node-dev": "^2.0.0",
     "typescript": "^5.7.2"
