@@ -9,6 +9,7 @@ import auth from "./routers/authRouter";
 import wallet from "./routers/walletRouter";
 import courses from "./routers/coursesRouter";
 import { checkAuthUser } from "./middlewares/authMiddleware";
+import { loger } from "./middlewares/logerMiddleware";
 import { coursesController } from "./coursesController";
 
 const app = express();
@@ -22,10 +23,10 @@ app.use(
   })
 );
 
-app.use("/auth", auth);
+app.use("/auth", loger, auth);
 app.use("/courses", courses);
-app.use("/user", checkAuthUser, user);
-app.use("/wallet", checkAuthUser, wallet);
+app.use("/user", checkAuthUser, loger, user);
+app.use("/wallet", checkAuthUser, loger, wallet);
 
 (async () => {
   app.listen(appPort, () => {

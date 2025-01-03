@@ -9,7 +9,8 @@ async function runMigrations() {
   const containWallet = Object.entries(configWallet).map(([name, value]) => {
     return `${name} DECIMAL(18, 8) DEFAULT ${value}`;
   });
-  const currentCoins = Object.entries(configCoins).map(([name, value]) => {
+
+  const currentCoins  = Object.entries(configCoins).map(([name, value]) => {
     return `${name} DECIMAL(18, 8) DEFAULT ${value}`;
   });
 
@@ -88,18 +89,17 @@ async function runMigrations() {
         `)
       }
     })
-    
-    // Удалить колонку если лишняя
-    // currentColumnNames.forEach(async (item) => {
-    //   if(item !== 'id' && item !== 'created_at' && !item.includes(Object.keys(configCoins))){
-    //     await connection.query('USE phantomcoin');
-    //     await connection.query(`
-    //       ALTER TABLE courses
-    //       DROP COLUMN ${item};  
-    //     `)
-    //   }
-    // })
-    
+
+    // 6. Проверка и создание таблицы loger
+    await connection.query(`
+      CREATE TABLE IF NOT EXISTS loger (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        method VARCHAR(100) NOT NULL,
+        user_id VARCHAR(100),
+        body_JSON VARCHAR(100),
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
+    `);
     
 
     console.log("Migration completed successfully.");

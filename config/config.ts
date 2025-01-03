@@ -1,4 +1,4 @@
-export const appPort = 3500;
+export const appPort = 3600;
 export const allowOrigin = "http://localhost:3000";
 export const wsPort = 8008;
 export const wsPath = "/connectWS";
@@ -18,4 +18,5 @@ type TWallet = Record<string, number>;
 export const configWallet = Object.keys(configCoins).reduce((acc, item) => {
   acc[item] = 0;
   return acc;
-}, {usd: 1000} as TWallet)
+}, {usd: 1000} as TWallet);
+
