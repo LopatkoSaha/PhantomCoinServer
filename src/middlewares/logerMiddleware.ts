@@ -9,10 +9,10 @@ export async function loger(req: any, res: any, next: NextFunction) {
   const bodyJSON = JSON.stringify(req.body);
   const method = req.method;
 
-  const userSql =
+  const logerSql =
         "INSERT INTO loger (method, user_id, body_JSON) VALUES (?, ?, ?)";
       try {
-        await connection.query(userSql, [method, userId, bodyJSON]);
+        await connection.query(logerSql, [method, userId, bodyJSON]);
       } catch (error) {
         if (error instanceof Error) {
           throw new Error(`Failed to loger ${error.message}`);
