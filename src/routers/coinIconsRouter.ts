@@ -1,9 +1,9 @@
 import express from "express";
 
-import { courses } from "../controllers/courses";
+import { coinIcons } from "../controllers/coinIcons";
 
 const router = express.Router();
 
-router.get("/get", courses);
+router.get("/get", coinIcons);
 
 export default router;

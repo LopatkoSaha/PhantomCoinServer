@@ -1,6 +1,6 @@
 
-import { connection } from "../src/model/database";
-import { configCoins } from "../config/config";
+import { connection } from "../../src/model/database";
+import { configCoins } from "../../config/config";
 
 const exchangeGenerator = (prev: number, defaultNum = 2) => {
     if (!prev) {

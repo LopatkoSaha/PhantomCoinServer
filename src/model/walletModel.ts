@@ -22,6 +22,7 @@ export class WalletModel {
     }
   }
   static async updateWallet(userId: number, coins: Record<string, number>): Promise<void> {
+
     let coinNames: Array<string> = [];
     let coinValues: Array<number> = [];
     
@@ -31,6 +32,7 @@ export class WalletModel {
         coinValues.push(value);
       }
     });
+    
     const walletSql = `UPDATE wallets SET ${coinNames.join()} WHERE id = ${userId}`;
     try {
       await connection.query(walletSql, coinValues);

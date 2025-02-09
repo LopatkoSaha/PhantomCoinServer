@@ -1,7 +1,6 @@
 import { NextFunction } from "express";
 
 import { connection } from "../model/database";
-import { log } from "console";
 
 
 export async function loger(req: any, res: any, next: NextFunction) {

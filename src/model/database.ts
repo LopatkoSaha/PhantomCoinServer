@@ -1,4 +1,4 @@
-import {
+import mysql, {
   createPool,
   Pool,
   RowDataPacket,
@@ -14,9 +14,9 @@ class MySQLConnect {
       port: config.port,
       user: config.user,
       password: config.password,
-      //   database: config.database,
+      database: config.database,
       waitForConnections: true,
-      connectionLimit: 10,
+      connectionLimit: 100,
       queueLimit: 0,
     });
   }

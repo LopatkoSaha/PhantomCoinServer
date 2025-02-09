@@ -1,20 +1,29 @@
-import { NextFunction } from "express";
-import jwt from "jsonwebtoken";
+import { Request, Response, NextFunction } from 'express';
+import jwt, { JwtPayload } from "jsonwebtoken";
 
-import { JsonWebTokenError, TokenExpiredError } from "../errors/errors";
-import { jsonSecretKey } from "../../config/config";
+import { secret } from "../../config/config";
 
-export async function checkAuthUser(req: any, res: any, next: NextFunction) {
-  if (!req.headers.token) {
-    next(new TokenExpiredError("Token is Not or Expired Error"));
+declare module 'express' {
+  interface Request {
+    userId?: number;
   }
-  jwt.verify(req.headers.token, jsonSecretKey, (err: any, decoded: any) => {
-    if (err) {
-      console.log("err=", err);
-      next(new JsonWebTokenError("Json Web Token Error"));
-    } else {
-      req.body.user = { id: decoded.id };
-      next();
-    }
-  });
 }
+
+export const authMiddleware = (req: Request, res: Response, next: NextFunction): void => {
+  const token = req.cookies?.auth_token;
+  if (!token) {
+    res.status(401).send({ message: 'Unauthorized' });
+    return;
+  }
+  try {
+    const decoded = jwt.verify(token, secret);
+    if (typeof decoded === 'object' && decoded !== null && 'id' in decoded) {
+      req.userId = (decoded as JwtPayload).id as number;
+      next();
+    } else {
+      res.status(401).send({ message: 'Invalid token payload' });
+    }
+  } catch (error) {
+    res.status(401).send({ message: 'Invalid token' });
+  }
+};

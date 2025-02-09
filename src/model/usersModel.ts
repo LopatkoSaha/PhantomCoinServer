@@ -23,9 +23,10 @@ export class UserModel {
   static async createUser(data: TData): Promise<void> {
     const { name, email, password } = data;
     const hash = bcrypt.hashSync(password, 8);
-    const walletSql = `INSERT INTO wallets (${Object.keys(
-      configWallet
-    ).join()}) VALUES (${Object.values(configWallet).join()})`;
+    const walletSql = `INSERT INTO wallets (
+      ${Object.keys(configWallet)
+      .join()}) VALUES (${Object.values(configWallet).join()}
+    )`;
     let walletId: number;
     try {
       const result = await connection.query<ResultSetHeader>(walletSql);

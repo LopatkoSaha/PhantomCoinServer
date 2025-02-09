@@ -1,39 +1,37 @@
-import express, { Router, Request, Response, NextFunction } from "express";
-import { WalletModel } from "../model/walletModel";
+import express from "express";
+
+import { get, update, buyCurrency, buyAllIn } from "../controllers/wallet";
+import { validateBody } from "../middlewares/validatorMiddleware";
 
 const router = express.Router();
 
-router.get("/get", async (req: any, res: any, next: NextFunction) => {
-  const { id } = req.body.user;
-
-  try {
-    const wallet = await WalletModel.getWallet(id);
-    if (!wallet) {
-      return res.status(404).json({ message: "Wallet not found" });
-    }
-    res.json(wallet);
-  } catch (error) {
-    console.error("Error fetching user:", error);
-    res.status(500).json({ message: "Internal server error" });
-  }
-});
+router.get("/get", get);
 
 router.post(
-  "/update",
-  async (req: Request, res: Response, next: NextFunction) => {
-    const { user, coins } = req.body;
-    try {
-      await WalletModel.updateWallet(user.id, coins);
-      res
-        .status(201)
-        .json({ message: `Wallet user with id ${user.id} is updated` });
-    } catch (error) {
-      const errorMessage =
-        error instanceof Error ? error.message : "Unknown error";
-      console.error("Error creating user:", errorMessage);
-      res.status(500).json({ message: errorMessage });
-    }
-  }
+    "/update",
+    validateBody({
+        coins: ["isExistingName"]
+    }),
+    update
+);
+
+router.post(
+    "/buyCurrency", 
+    validateBody({
+        saleName: ["required", "isCurrencyName"],
+        buyName: ["required", "isCurrencyName"],
+        quantity: ["required", "noNegativeNumber"],
+    }), 
+    buyCurrency
+);
+
+router.post(
+    "/buyAllIn", 
+    validateBody({
+        saleName: ["required", "isCurrencyName"],
+        buyName: ["required", "isCurrencyName"],
+    }), 
+    buyAllIn
 );
 
 export default router;

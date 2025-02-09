@@ -1,17 +1,21 @@
 import { RowDataPacket, ResultSetHeader } from "mysql2/promise";
 import { connection } from "./database"; // Подключение к базе данных
-import { configWallet, configCoins } from "../../config/config";
+import { configWallet, configCoins, configCoinsImg } from "../../config/config";
 
 type TColumnNames = RowDataPacket & {COLUMN_NAME: string};
 
 async function runMigrations() {
 
   const containWallet = Object.entries(configWallet).map(([name, value]) => {
-    return `${name} DECIMAL(18, 8) DEFAULT ${value}`;
+    return `${name} DECIMAL(10, 2) DEFAULT "${value}"`;
   });
 
   const currentCoins  = Object.entries(configCoins).map(([name, value]) => {
-    return `${name} DECIMAL(18, 8) DEFAULT ${value}`;
+    return `${name} DECIMAL(10, 2) DEFAULT ${value}`;
+  });
+
+  const coinsImg  = Object.entries(configCoinsImg).map(([name, value]) => {
+    return `${name} VARCHAR(255) DEFAULT '${value}'`;
   });
 
   try {
@@ -33,7 +37,7 @@ async function runMigrations() {
       SELECT COLUMN_NAME
       FROM information_schema.COLUMNS
       WHERE TABLE_SCHEMA = 'phantomcoin'
-        AND TABLE_NAME = 'wallets'
+      AND TABLE_NAME = 'wallets'
     `)
     const currentWalletColumnNames = columnsWalletsDb.map((item) => {
         return item.COLUMN_NAME
@@ -43,7 +47,7 @@ async function runMigrations() {
       if(!currentWalletColumnNames.includes(item)){
         await connection.query(`
           ALTER TABLE wallets
-          ADD COLUMN ${item} DECIMAL(18, 8) DEFAULT 0;  
+          ADD COLUMN ${item} DECIMAL(10, 2) DEFAULT 0;  
         `)
       }
     })
@@ -85,12 +89,12 @@ async function runMigrations() {
       if(!currentColumnNames.includes(item)){
         await connection.query(`
           ALTER TABLE courses
-          ADD COLUMN ${item} DECIMAL(18, 8) DEFAULT 0;  
+          ADD COLUMN ${item} DECIMAL(10, 2) DEFAULT 0;  
         `)
       }
     })
 
-    // 6. Проверка и создание таблицы loger
+    // 7. Проверка и создание таблицы loger
     await connection.query(`
       CREATE TABLE IF NOT EXISTS loger (
         id INT AUTO_INCREMENT PRIMARY KEY,
@@ -100,8 +104,60 @@ async function runMigrations() {
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       );
     `);
-    
 
+    // 8. Проверка и создание таблицы coinsImg
+    await connection.query(`
+      DROP TABLE IF EXISTS coinIcons;
+    `);
+    
+    await connection.query(`
+      CREATE TABLE IF NOT EXISTS coinIcons (
+        name VARCHAR(255) NOT NULL,
+        icon TEXT NOT NULL
+      );
+    `);
+    // Автоматическое заполнение таблицы coinsImg ссылками
+    const coinsImgData = Object.entries(configCoinsImg).map(
+      ([name, value]) => `('${name}', '${value}')`
+    );
+    
+    await connection.query(`
+      INSERT INTO coinIcons (name, icon)
+      VALUES ${coinsImgData.join(",\n")};
+    `);
+
+    // 9. Проверка и создание таблицы preorder
+    await connection.query(`
+      CREATE TABLE IF NOT EXISTS preorder (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        wallet_id INT UNSIGNED NOT NULL,
+        currency_sell ENUM(${Object.keys(configCoins).map((item)=>`'${item}'`).join()}) NOT NULL,
+        currency_buy ENUM(${Object.keys(configCoins).map((item)=>`'${item}'`).join()}) NOT NULL,
+        value_buy DECIMAL(10, 2) DEFAULT NULL,
+        is_all_in TINYINT(1) NOT NULL CHECK (is_active IN (0, 1)),
+        trigger_course DECIMAL(10, 2) DEFAULT NULL,
+        is_active TINYINT(1) NOT NULL CHECK (is_active IN (0, 1)),
+        status ENUM('pending', 'success', 'fail') NOT NULL,
+        triggered_at TIMESTAMP NULL DEFAULT NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
+    `);
+
+    // 10. Проверка и создание таблицы transactions
+    await connection.query(`
+      CREATE TABLE IF NOT EXISTS transactions (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        wallet_id INT UNSIGNED NOT NULL,
+        currency_sell VARCHAR(64) NOT NULL,
+        currency_buy VARCHAR(64) NOT NULL,
+        value_sell DECIMAL(10, 2) DEFAULT NULL,
+        value_buy DECIMAL(10, 2) DEFAULT NULL,
+        prev_hash VARCHAR(64),
+        hash VARCHAR(64) NOT NULL UNIQUE,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
+    `);
+    
     console.log("Migration completed successfully.");
   } catch (error) {
     console.error("Migration failed:", error);
