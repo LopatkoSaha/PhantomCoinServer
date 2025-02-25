@@ -1,7 +1,7 @@
 import { RowDataPacket } from "mysql2/promise";
 
 import { connection } from "../../src/model/database";
-import { calculateHash } from "../handlers/calculateHash";
+import { calculateHash } from "../helpers/calculateHash";
 
 
 export class Trasaction {

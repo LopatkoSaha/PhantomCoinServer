@@ -1,7 +1,7 @@
 import { Request, Response, NextFunction } from "express";
 import { UserModel } from "../model/usersModel";
 
-export const userGet = async (req: any, res: any, next: NextFunction) => {
+export const userGet = async (req: Request, res: any, next: NextFunction) => {
     const {userId} = req;
     if (!userId) {
       return res.status(400).json({ message: "Id is required" });

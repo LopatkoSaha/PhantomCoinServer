@@ -131,8 +131,8 @@ async function runMigrations() {
       CREATE TABLE IF NOT EXISTS preorder (
         id INT AUTO_INCREMENT PRIMARY KEY,
         wallet_id INT UNSIGNED NOT NULL,
-        currency_sell ENUM(${Object.keys(configCoins).map((item)=>`'${item}'`).join()}) NOT NULL,
-        currency_buy ENUM(${Object.keys(configCoins).map((item)=>`'${item}'`).join()}) NOT NULL,
+        currency_sell ENUM(${Object.keys(configWallet).map((item)=>`'${item}'`).join()}) NOT NULL,
+        currency_buy ENUM(${Object.keys(configWallet).map((item)=>`'${item}'`).join()}) NOT NULL,
         value_buy DECIMAL(10, 2) DEFAULT NULL,
         is_all_in TINYINT(1) NOT NULL CHECK (is_active IN (0, 1)),
         trigger_course DECIMAL(10, 2) DEFAULT NULL,

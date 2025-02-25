@@ -10,9 +10,10 @@ import auth from "./routers/authRouter";
 import wallet from "./routers/walletRouter";
 import courses from "./routers/coursesRouter";
 import coinIcons from "./routers/coinIconsRouter";
+import preorders from "./routers/prordersRouter";
 import { authMiddleware } from "./middlewares/authMiddleware";
 import { loger } from "./middlewares/logerMiddleware";
-import { coursesController } from "../src/handlers/coursesController";
+import { coursesController } from "./helpers/coursesController";
 
 const app = express();
 
@@ -28,10 +29,11 @@ app.use(
 app.use(cookieParser());
 
 app.use("/auth", auth);
+app.use("/coinIcons", coinIcons);
 app.use("/courses", courses);
 app.use("/user", authMiddleware, user);
 app.use("/wallet", authMiddleware, wallet);
-app.use("/coinIcons", coinIcons);
+app.use("/preorders", authMiddleware, preorders);
 
 (async () => {
   app.listen(appPort, () => {

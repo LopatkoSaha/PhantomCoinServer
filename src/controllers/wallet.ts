@@ -2,10 +2,10 @@ import { Request, Response, NextFunction } from "express";
 import { connection } from "../model/database";
 import { WalletModel } from "../model/walletModel";
 import { Trasaction } from "../model/transactionModel";
-import { verifyBlockchain } from "../handlers/verifyBlockchain";
+import { verifyBlockchain } from "../helpers/verifyBlockchain";
 
 
-export const get = async (req: any, res: any, next: NextFunction) => {
+export const get = async (req: Request, res: any, next: NextFunction) => {
   const {userId} = req;
   try {
     const wallet = await WalletModel.getWallet(userId!);

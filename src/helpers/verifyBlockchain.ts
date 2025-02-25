@@ -1,6 +1,6 @@
 import { RowDataPacket } from "mysql2/promise";
 
-import { connection } from "../../src/model/database";
+import { connection } from "../model/database";
 import { calculateHash } from "./calculateHash";
 
 export async function verifyBlockchain() {
