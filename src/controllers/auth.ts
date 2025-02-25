@@ -6,7 +6,7 @@ import { Request, Response, NextFunction } from "express";
 import { LoginError, RegistrationError } from "../errors/errors";
 import { UserModel } from "../model/usersModel";
 import { connection } from "../model/database";
-import { generateToken } from "../handlers/generateToken";
+import { generateToken } from "../helpers/generateToken";
 
 export const login = async (req: Request, res: any, next: NextFunction) => {
   const { email, password } = req.body;
@@ -39,7 +39,7 @@ export const login = async (req: Request, res: any, next: NextFunction) => {
 };
 
 export const logout =
-  async (req: Request, res: any, next: NextFunction) => {
+  async (req: Request, res: Response, next: NextFunction) => {
     res.clearCookie('auth_token');
     res.status(200).json({ message: 'Logged out successfully' });
 };

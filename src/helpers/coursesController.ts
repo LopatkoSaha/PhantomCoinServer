@@ -1,6 +1,7 @@
 
-import { connection } from "../../src/model/database";
+import { connection } from "../model/database";
 import { configCoins } from "../../config/config";
+import { menagePreorders } from "./executionPreorders";
 
 const exchangeGenerator = (prev: number, defaultNum = 2) => {
     if (!prev) {
@@ -38,7 +39,7 @@ export const coursesController = () => {
               await connection.query(query, coinValues);
         } else {
             const coinNames = Object.keys(configCoins);   
-            const changedCoin = coinNames[Math.floor(Math.random() * coinNames.length)]; 
+            const changedCoin = coinNames[Math.floor(Math.random() * coinNames.length)];
             const changedValue = exchangeGenerator(+rows[changedCoin]);
             const newCours = coinNames.reduce((acc, item) => {
                 if(item === changedCoin) {
@@ -56,6 +57,7 @@ export const coursesController = () => {
                 VALUES (${placeholders})
             `;
             await connection.query(query, newCoursValues);
-        }         
-    }, 60000);
+            menagePreorders([changedCoin]);     
+          }
+        }, 6000);
 }

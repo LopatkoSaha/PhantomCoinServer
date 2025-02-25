@@ -21,6 +21,7 @@ export class WalletModel {
       }
     }
   }
+  
   static async updateWallet(userId: number, coins: Record<string, number>): Promise<void> {
 
     let coinNames: Array<string> = [];
