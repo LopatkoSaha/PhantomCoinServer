@@ -4,20 +4,26 @@ import moment from "moment";
 import { connection } from "../model/database";
 import { WalletModel } from "../model/walletModel";
 import { PreordersModel } from "../model/preordersModel";
+import { tBot } from "../telegram/telegramBot";
 
-const sendMessage = (
+const sendMessage = async (
     status: "success" | "fail", 
+    telegramId: string | null,
     currencyBuy: string, 
     currencySell: string, 
     valueBuyed: number, 
     valueSold: number | null, 
     created_at: string) => {
-    if (status === "success"){
-        console.log(`Вы купили  ${valueBuyed.toFixed(2)} ${currencyBuy}  за  ${valueSold ? valueSold.toFixed(2) : "все"} ${currencySell} согласно предзаказу созданному ${created_at}`);
-    }
-    if (status === "fail") {
-        console.log(`Выполнение тразакции отменено, не достаточно средств ${currencySell} для покупки ${valueBuyed.toFixed(2)} ${currencyBuy}, согласно предзаказу созданному ${created_at}`);
-    } 
+
+        if (!telegramId) {
+            return console.log("Сработал триггер не подписанного на телегу чувака")
+        }
+        if (status === "success"){
+            await tBot.sendMessage(telegramId, `Вы купили  ${valueBuyed.toFixed(2)} ${currencyBuy}  за  ${valueSold ? valueSold.toFixed(2) : "все"} ${currencySell} согласно предзаказу созданному ${created_at}`);
+        }
+        if (status === "fail") {
+            await tBot.sendMessage(telegramId, `Выполнение тразакции отменено, не достаточно средств ${currencySell} для покупки ${valueBuyed.toFixed(2)} ${currencyBuy}, согласно предзаказу созданному ${created_at}`);
+        } 
 }
 
 export const menagePreorders = async (nameChangedCoin: string[]) => {
@@ -33,6 +39,7 @@ const processPreorders = async (nameChangedCoin: string, lastCourse: Record<stri
             SELECT 
                 u.name AS userName,
                 u.id AS userId,
+                u.telegram_id AS telegramId,
                 p.id AS preorderId,
                 p.wallet_id AS walletId,
                 p.currency_sell AS currencySell,
@@ -56,6 +63,7 @@ const processPreorders = async (nameChangedCoin: string, lastCourse: Record<stri
         preordersToProcess.forEach(async(item) => {
             const {
                 userId,
+                telegramId,
                 preorderId,
                 currencySell,
                 currencyBuy,
@@ -93,7 +101,7 @@ const processPreorders = async (nameChangedCoin: string, lastCourse: Record<stri
                     
                     await WalletModel.updateWallet(userId, changedCoinsForWallet);
                     await PreordersModel.updatePreorder(preorderId, conditionsUpdatePreorder);
-                    sendMessage("success", currencyBuy, currencySell, valueBuyed, +item[currencySell], moment(createdAt).format("YYYY-MM-DD HH:mm:ss"));
+                    await sendMessage("success", telegramId, currencyBuy, currencySell, valueBuyed, +item[currencySell], moment(createdAt).format("YYYY-MM-DD HH:mm:ss"));
                     return
                 }
                 if (valueBuy) {
@@ -105,7 +113,7 @@ const processPreorders = async (nameChangedCoin: string, lastCourse: Record<stri
                             triggered_at: moment().format("YYYY-MM-DD HH:mm:ss")
                         };
                         await PreordersModel.updatePreorder(preorderId, conditionsUpdatePreorder);
-                        sendMessage("fail", currencyBuy, currencySell, valueBuy, null, moment(createdAt).format("YYYY-MM-DD HH:mm:ss"));
+                        await sendMessage("fail", telegramId, currencyBuy, currencySell, valueBuy, null, moment(createdAt).format("YYYY-MM-DD HH:mm:ss"));
                         return
                     } else {
                         const valueSell = (courseCurrencyBuy * (+valueBuy/courseCurrencySell));
@@ -125,7 +133,7 @@ const processPreorders = async (nameChangedCoin: string, lastCourse: Record<stri
 
                         await WalletModel.updateWallet(userId, changedCoinsForWallet);
                         await PreordersModel.updatePreorder(preorderId, conditionsUpdatePreorder);
-                        sendMessage("success", currencyBuy, currencySell, valueBuy, valueSell, moment(createdAt).format("YYYY-MM-DD HH:mm:ss"));
+                        await sendMessage("success", telegramId, currencyBuy, currencySell, valueBuy, valueSell, moment(createdAt).format("YYYY-MM-DD HH:mm:ss"));
                     }
                 }
             }

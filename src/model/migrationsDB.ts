@@ -59,8 +59,9 @@ async function runMigrations() {
         name VARCHAR(100) NOT NULL,
         email VARCHAR(100) NOT NULL UNIQUE,
         password VARCHAR(255) NOT NULL,
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         walletId INT,
+        telegram_id VARCHAR(100) NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         FOREIGN KEY (walletId) REFERENCES wallets(id) ON DELETE SET NULL
       );
     `);
@@ -79,7 +80,7 @@ async function runMigrations() {
       SELECT COLUMN_NAME
       FROM information_schema.COLUMNS
       WHERE TABLE_SCHEMA = 'phantomcoin'
-        AND TABLE_NAME = 'courses'
+      AND TABLE_NAME = 'courses'
     `)
     const currentColumnNames = columnsCoursesDb.map((item) => {
         return item.COLUMN_NAME
@@ -155,6 +156,17 @@ async function runMigrations() {
         prev_hash VARCHAR(64),
         hash VARCHAR(64) NOT NULL UNIQUE,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
+    `);
+
+    // 11. Проверка и создание таблицы telegram_tokens
+    await connection.query(`
+      CREATE TABLE IF NOT EXISTS telegram_tokens (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        user_id INT UNSIGNED NOT NULL,
+        token VARCHAR(64) NOT NULL,
+        is_active TINYINT(1) NOT NULL CHECK (is_active IN (0, 1)),
+        expired_at TIMESTAMP NOT NULL
       );
     `);
     
