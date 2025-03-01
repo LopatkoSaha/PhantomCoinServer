@@ -1,6 +1,6 @@
 
 import { connection } from "../model/database";
-import { configCoins } from "../../config/config";
+import { configCoins, courseUpdateTimeout } from "../../config/config";
 import { menagePreorders } from "./executionPreorders";
 
 const exchangeGenerator = (prev: number, defaultNum = 2) => {
@@ -59,5 +59,5 @@ export const coursesController = () => {
             await connection.query(query, newCoursValues);
             menagePreorders([changedCoin]);     
           }
-        }, 6000);
+        }, courseUpdateTimeout);
 }

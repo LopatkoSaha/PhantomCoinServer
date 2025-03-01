@@ -71,7 +71,44 @@ export class PreordersModel {
       return `preorder for wallet with id ${walletId} is deleted`
     } catch (error) {
       if (error instanceof Error) {
-        throw new Error(`Failed to create user: ${error.message}`);
+        throw new Error(`Failed to delete preorder: ${error.message}`);
+      } else {
+        throw new Error("An unknown error occurred");
+      }
+    }
+  }
+
+  static async getProcessPreorders (nameChangedCoin: string, lastCourse: Record<string, any>) {
+    try {
+      lastCourse.usd = 1;
+      const preordersToProcessSql =`
+            SELECT 
+                u.name AS userName,
+                u.id AS userId,
+                u.telegram_id AS telegramId,
+                p.id AS preorderId,
+                p.wallet_id AS walletId,
+                p.currency_sell AS currencySell,
+                p.currency_buy AS currencyBuy,
+                p.value_buy AS valueBuy,
+                p.is_all_in AS isAllIn,
+                p.trigger_course AS triggerCourse,
+                p.created_at AS createdAt,
+                w.*
+            FROM preorder p 
+            LEFT JOIN wallets w ON p.wallet_id = w.id 
+            LEFT JOIN users u ON w.id = u.walletId 
+            WHERE p.currency_buy = ? 
+            AND p.is_active = 1
+            AND p.trigger_course >= ?
+            `;
+        const preordersToProcess: [RowDataPacket[], any] = await connection.query(preordersToProcessSql, [
+            nameChangedCoin, lastCourse[nameChangedCoin]
+        ]);
+      return preordersToProcess
+    } catch (error) {
+      if (error instanceof Error) {
+        throw new Error(`Failed to geted preorders process: ${error.message}`);
       } else {
         throw new Error("An unknown error occurred");
       }
