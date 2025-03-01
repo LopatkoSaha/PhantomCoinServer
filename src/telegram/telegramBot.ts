@@ -1,7 +1,5 @@
 import {Telegraf, Context} from "telegraf";
-import { RowDataPacket, ResultSetHeader } from "mysql2/promise";
 
-import { connection } from "../model/database";
 import { TelegramTokenModel } from "../model/telegramTokenModel";
 import { UserModel } from "../model/usersModel";
 import { WalletModel } from "../model/walletModel";
@@ -58,7 +56,15 @@ class TelegramBot {
             return ctx.reply("Привет! Чтобы использовать бота, откройте его через QR-код.");
         }
         const wallet = await WalletModel.getWallet(user.id);
-        return ctx.reply(JSON.stringify(wallet));
+
+        const walletForTelegram: Record<string, any> = Object.entries(wallet).reduce(
+            (acc: Record<string, any>, [key, value]) => {
+                if (key !== "id" && key !== "created_at") acc[key] = Number(value).toFixed(2);
+                return acc;
+            },
+            {}
+        );
+        return ctx.reply(`<pre>${JSON.stringify(walletForTelegram, null, 2)}</pre>`, { parse_mode: "HTML" });
     }
 }
 

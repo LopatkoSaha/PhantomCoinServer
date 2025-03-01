@@ -3,6 +3,7 @@ import { Request, Response, NextFunction } from "express";
 import { generateTelegramQR } from "../telegram/telegramQR";
 import { UserModel } from "../model/usersModel";
 import { TelegramTokenModel } from "../model/telegramTokenModel";
+import { getRandomString } from "../helpers/randomString";
 
 
 
@@ -14,7 +15,7 @@ export const getQR = async (req: Request, res: any, next: NextFunction) => {
         if (!user) {
           return res.status(404).json({ message: "User not found"});
         }
-        const token = Date.now().toString();
+        const token = getRandomString(20);
         await TelegramTokenModel.create(userId, token, new Date(Date.now() + 120000));
         res.json( await generateTelegramQR(token));
     }
