@@ -1,10 +1,10 @@
 import {Telegraf, Context} from "telegraf";
 
-import { TelegramTokenModel } from "../model/telegramTokenModel";
 import { UserModel } from "../model/usersModel";
 import { WalletModel } from "../model/walletModel";
 import { telegramBotToken } from "../../config/config";
 import { TelegramKeyboards } from "./telegramKeyboards";
+import { redisDb } from "../redisDb/redisDb";
 
 
 
@@ -28,18 +28,13 @@ class TelegramBot {
         if (!token) {
             return ctx.reply("Привет! Чтобы использовать бота, откройте его через QR-код.");
         }
-        const tokenRecord =  await TelegramTokenModel.findByToken(token);
-        if (!tokenRecord) {
+        const userId =  await redisDb.getToken(token);
+        if (!userId) {
             return ctx.reply("Привет! Чтобы использовать бота, откройте его через QR-код.");
         }
-        if (tokenRecord.is_active === 0) {
-            return ctx.reply(`Привет! Создайте новый QR код в личном кабинете PhantomCoin`);
-        } 
-        if (new Date(tokenRecord.expired_at) < new Date()) {
-            return ctx.reply(`Привет! Срок действия QR кода истек, создайте новый`);
-        }
-        await UserModel.updateTelegramId(tokenRecord.user_id, chatId);
-        await TelegramTokenModel.deactivate(tokenRecord.id);
+        
+        await UserModel.updateTelegramId(Number(userId), chatId);
+        await redisDb.deleteToken(token);
         ctx.reply(
             `Привет! Вы успешно подписались на PhantomCoin`,
             TelegramKeyboards.startKeyboard()
