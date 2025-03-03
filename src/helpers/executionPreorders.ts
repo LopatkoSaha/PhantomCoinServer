@@ -19,10 +19,10 @@ const sendMessage = async (
             return console.log("Сработал триггер не подписанного на телегу чувака")
         }
         if (status === "success"){
-            await tBot.sendMessage(telegramId, `Вы купили  ${valueBuyed.toFixed(2)} ${currencyBuy}  за  ${valueSold ? valueSold.toFixed(2) : "все"} ${currencySell} согласно предзаказу созданному ${created_at}`);
+            await tBot.sendMessage(telegramId, `Вы купили  ${valueBuyed} ${currencyBuy}  за  ${valueSold ? valueSold : "все"} ${currencySell} согласно предзаказу созданному ${created_at}`);
         }
         if (status === "fail") {
-            await tBot.sendMessage(telegramId, `Выполнение тразакции отменено, не достаточно средств ${currencySell} для покупки ${valueBuyed.toFixed(2)} ${currencyBuy}, согласно предзаказу созданному ${created_at}`);
+            await tBot.sendMessage(telegramId, `Выполнение тразакции отменено, не достаточно средств ${currencySell} для покупки ${valueBuyed} ${currencyBuy}, согласно предзаказу созданному ${created_at}`);
         } 
 }
 
@@ -72,7 +72,6 @@ const processPreorders = async (nameChangedCoin: string, lastCourse: Record<stri
                         [currencySell]: newValueCurrencySell,
                         [currencyBuy]: newValueCurrencyBuy,
                     };
-                    console.log(+item[currencySell], courseCurrencySell, courseCurrencyBuy, +item[currencyBuy],valueBuyed, newValueCurrencyBuy);
                     
                     await WalletModel.updateWallet(userId, changedCoinsForWallet);
                     await PreordersModel.updatePreorder(preorderId, conditionsUpdatePreorder);
@@ -93,7 +92,7 @@ const processPreorders = async (nameChangedCoin: string, lastCourse: Record<stri
                     } else {
                         const valueSell = (courseCurrencyBuy * (+valueBuy/courseCurrencySell));
                         const newValueCurrencySell = (+item[currencySell] - valueSell);
-                        const newValueCurrencyBuy = +(+item[currencyBuy] + (+valueBuy)).toFixed(2);
+                        const newValueCurrencyBuy = +(+item[currencyBuy] + (+valueBuy));
 
                         const conditionsUpdatePreorder = {
                             is_active: 0,
