@@ -2,6 +2,7 @@
 import { connection } from "../model/database";
 import { configCoins, courseUpdateTimeout } from "../../config/config";
 import { menagePreorders } from "./executionPreorders";
+import { wsServer } from "../webSocket/webSocketServer";
 
 const exchangeGenerator = (prev: number, defaultNum = 2) => {
     if (!prev) {
@@ -57,7 +58,8 @@ export const coursesController = () => {
                 VALUES (${placeholders})
             `;
             await connection.query(query, newCoursValues);
-            menagePreorders([changedCoin]);     
+            menagePreorders([changedCoin]);
+            wsServer.send(JSON.stringify(newCours));    
           }
         }, courseUpdateTimeout);
 }
