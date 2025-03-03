@@ -4,6 +4,7 @@ import { generateTelegramQR } from "../telegram/telegramQR";
 import { UserModel } from "../model/usersModel";
 import { TelegramTokenModel } from "../model/telegramTokenModel";
 import { getRandomString } from "../helpers/randomString";
+import { redisDb } from "../redisDb/redisDb";
 
 
 
@@ -16,7 +17,7 @@ export const getQR = async (req: Request, res: any, next: NextFunction) => {
           return res.status(404).json({ message: "User not found"});
         }
         const token = getRandomString(20);
-        await TelegramTokenModel.create(userId, token, new Date(Date.now() + 120000));
+        await redisDb.saveToken(token, userId);
         res.json( await generateTelegramQR(token));
     }
   } catch (error) {
