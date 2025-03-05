@@ -3,9 +3,7 @@ import { connection } from "./database";
 
 async function getCoinIconsMap(): Promise<{ [key: string]: string }> {
     try {
-        const rows: [RowDataPacket[], any] = await connection.query(`
-            SELECT name, icon FROM coinIcons;
-        `);
+        const rows: [RowDataPacket[], any] = await connection.query(`SELECT name, icon FROM coinIcons`);
         if (Array.isArray(rows)) {
             const result = rows.reduce((acc, row) => {
                 acc[row.name] = row.icon; 
@@ -17,7 +15,6 @@ async function getCoinIconsMap(): Promise<{ [key: string]: string }> {
             console.error("Data format is not as expected. Expected an array of rows.");
             throw new Error("Data format error");
         }
-
     } catch (error) {
         console.error("Ошибка при выполнении запроса:", error);
         throw error;

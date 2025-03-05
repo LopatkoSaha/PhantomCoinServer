@@ -1,5 +1,5 @@
 import WebSocket, {WebSocketServer} from "ws";
-import { wsPort } from "../../config/config"
+import { wsPort } from "../../config/config";
 
 class WSServer {
     private wss: WebSocketServer;

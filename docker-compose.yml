@@ -1,4 +1,6 @@
-version: '3.5'
+networks:
+  selenoid:
+    name: selenoid
 services:
   mysql:
     image: mysql:5.7
@@ -22,6 +24,28 @@ services:
     restart: always
     command: redis-server --appendonly no
 
+  zookeeper:
+    image: wurstmeister/zookeeper:latest
+    networks:
+      selenoid: null
+    ports:
+      - "2181:2181"
+    restart: always
+  kafka:
+    image: wurstmeister/kafka:latest
+    networks:
+      selenoid: null
+    ports:
+      - "9092:9092"
+    environment:
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_ADVERTISED_HOST_NAME: kafka
+      KAFKA_ADVERTISED_PORT: 9092
+      KAFKA_CREATE_TOPICS: "loger:1:1"
+    depends_on:
+      - zookeeper
+    restart: always
+
   redis-commander:
     image: rediscommander/redis-commander:latest
     container_name: redis-commander
@@ -30,6 +54,20 @@ services:
       - REDIS_HOSTS=local:redis:6379
     ports:
       - "8081:8081"
+
+  kafka-ui:
+    container_name: kafka-ui
+    image: provectuslabs/kafka-ui:latest
+    networks:
+      selenoid: null
+    ports:
+      - 8080:8080
+    depends_on:
+      - kafka
+      - zookeeper
+    environment:
+      KAFKA_CLUSTERS_0_NAME: kafka
+      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka:9092
 
 volumes:
   mysql_data:

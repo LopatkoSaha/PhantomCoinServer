@@ -1,9 +1,4 @@
-import mysql, {
-  createPool,
-  Pool,
-  RowDataPacket,
-  ResultSetHeader,
-} from "mysql2/promise";
+import { createPool, Pool, RowDataPacket, ResultSetHeader } from "mysql2/promise";
 import { config } from "../../config/server_config";
 
 class MySQLConnect {

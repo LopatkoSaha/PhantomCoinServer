@@ -2,6 +2,7 @@ import { Request, Response, NextFunction } from 'express';
 import jwt, { JwtPayload } from "jsonwebtoken";
 
 import { secret } from "../../config/config";
+import { loger } from "../model/logerModel";
 
 declare module 'express' {
   interface Request {
@@ -21,9 +22,10 @@ export const authMiddleware = (req: Request, res: Response, next: NextFunction):
       req.userId = (decoded as JwtPayload).id as number;
       next();
     } else {
+      loger.warning({ path: req.path, body: req.body, message: "Invalid token payload'" });
       res.status(401).send({ message: 'Invalid token payload' });
     }
   } catch (error) {
-    res.status(401).send({ message: 'Invalid token' });
+    next(error);
   }
 };

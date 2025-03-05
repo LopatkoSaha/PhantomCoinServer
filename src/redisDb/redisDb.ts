@@ -1,15 +1,14 @@
 import { createClient } from "redis";
 
-class RedisDB{
+class RedisDB {
     private redisClient;
 
     constructor (private prefix: string, private ttl: number) {
         this.redisClient = createClient();
         this.redisClient.on("error", (err: any) => console.error("Redis Client Error", err));
-        this.startRedis();
     }
 
-    private async startRedis() {
+    async startRedis() {
         await this.redisClient.connect();
         console.log("🚀 Redis подключен");
     }

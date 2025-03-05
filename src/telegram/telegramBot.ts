@@ -6,8 +6,6 @@ import { telegramBotToken } from "../../config/config";
 import { TelegramKeyboards } from "./telegramKeyboards";
 import { redisDb } from "../redisDb/redisDb";
 
-
-
 class TelegramBot {
     private bot: Telegraf;
 

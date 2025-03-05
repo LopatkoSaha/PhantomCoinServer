@@ -6,12 +6,10 @@ import { configWallet } from "../../config/config";
 export class WalletModel {
   static async getWallet(userId: number): Promise<any> {
     try {
-      const walletSql =
-        "SELECT * FROM wallets WHERE id IN (SELECT users.walletId FROM users WHERE id = ?)";
-      const [rows]: [RowDataPacket[], any] = await connection.query(walletSql, [
-        userId,
-      ]);
-      const wallet = rows;
+      const [wallet]: [RowDataPacket[], any] = await connection.query(
+        "SELECT * FROM wallets WHERE id IN (SELECT users.walletId FROM users WHERE id = ?)", 
+        [userId]
+      );
       return wallet;
     } catch (error) {
       if (error instanceof Error) {
@@ -33,10 +31,8 @@ export class WalletModel {
         coinValues.push(value);
       }
     });
-    
-    const walletSql = `UPDATE wallets SET ${coinNames.join()} WHERE id = ${userId}`;
     try {
-      await connection.query(walletSql, coinValues);
+      await connection.query(`UPDATE wallets SET ${coinNames.join()} WHERE id = ${userId}`, coinValues);
     } catch (error) {
       if (error instanceof Error) {
         throw new Error(`Failed to updated wallet: ${error.message}`);
