@@ -13,12 +13,14 @@ import coinIcons from "./routers/coinIconsRouter";
 import preorders from "./routers/preordersRouter";
 import telegram from "./routers/telegramRouter";
 import chat from "./routers/chatRouter";
+import tokenForecast from "./routers/tokenForecastRouter";
 import { errors } from "./routers/errorRouter";
 import { authMiddleware } from "./middlewares/authMiddleware";
 import { coursesController } from "./helpers/coursesController";
 import { tBot } from "./telegram/telegramBot";
 import { redisDb } from "./redisDb/redisDb";
 import { kafkaProducer } from "./kafkaProducer";
+import { mistralLlm } from "./llmModels/mistlslLlm";
 
 const app = express();
 
@@ -41,6 +43,7 @@ app.use("/wallet", authMiddleware, wallet);
 app.use("/preorders", authMiddleware, preorders);
 app.use("/telegram", authMiddleware, telegram);
 app.use("/chat", authMiddleware, chat);
+app.use("/tokenForecast", authMiddleware, tokenForecast);
 app.use(errors);
 
 
@@ -50,6 +53,7 @@ app.use(errors);
   await kafkaProducer.startProducer();
   coursesController.init(courseUpdateTimeout);
   tBot.init();
+  mistralLlm.init();
   app.listen(appPort, () => {
     console.log(`Listening port ${appPort}`);
   });

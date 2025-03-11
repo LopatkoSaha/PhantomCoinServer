@@ -1,5 +1,5 @@
 import { RowDataPacket, ResultSetHeader } from "mysql2/promise";
-import { connection } from "./database"; // Подключение к базе данных
+import { connection } from "./database";
 import { configWallet, configCoins, configCoinsImg } from "../../config/config";
 
 type TColumnNames = RowDataPacket & {COLUMN_NAME: string};
@@ -99,9 +99,10 @@ async function runMigrations() {
     await connection.query(`
       CREATE TABLE IF NOT EXISTS loger (
         id INT AUTO_INCREMENT PRIMARY KEY,
-        method VARCHAR(100) NOT NULL,
-        user_id VARCHAR(100),
-        body_JSON VARCHAR(100),
+        type VARCHAR(100) NOT NULL,
+        path VARCHAR(100) NOT NULL,
+        body VARCHAR(100),
+        message VARCHAR(100),
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       );
     `);
@@ -167,6 +168,16 @@ async function runMigrations() {
         token VARCHAR(64) NOT NULL,
         is_active TINYINT(1) NOT NULL CHECK (is_active IN (0, 1)),
         expired_at TIMESTAMP NOT NULL
+      );
+    `);
+
+    // 12. Проверка и создание таблицы aditional_info
+    await connection.query(`
+      CREATE TABLE IF NOT EXISTS aditional_info (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        user_id INT,
+        token_forecast DECIMAL(10, 0) DEFAULT 5,
+        FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE SET NULL
       );
     `);
     

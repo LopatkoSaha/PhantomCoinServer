@@ -50,6 +50,10 @@ export class UserModel {
         "INSERT INTO users (name, email, password, walletId, telegram_id) VALUES (?, ?, ?, ?, ?)", 
         [name, email, hash, walletId, null]
       );
+      await connection.query(
+        "INSERT INTO aditional_info (user_id, token_forecast) VALUES (?, ?)", 
+        [walletId, 5]
+      );
     } catch (error) {
       if (error instanceof Error) {
         throw new Error(`Failed to create user: ${error.message}`);
@@ -119,6 +123,7 @@ export class UserModel {
     try {
       await connection.query("DELETE FROM users WHERE id=?", [id]);
       await connection.query("DELETE FROM wallets WHERE id=?", [id]);
+      await connection.query("DELETE FROM aditional_info WHERE id=?", [id]);
     } catch (error) {
       if (error instanceof Error) {
         throw new Error(`Failed to create user: ${error.message}`);

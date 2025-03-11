@@ -1,9 +1,9 @@
 import express from "express";
 
-import { chat } from "../controllers/chat";
+import { chatLlm } from "../controllers/chatLlm";
 
 const router = express.Router();
 
-router.all("/*",  chat);
+router.all("/*",  chatLlm);
 
 export default router;

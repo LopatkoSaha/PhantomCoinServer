@@ -69,5 +69,17 @@ services:
       KAFKA_CLUSTERS_0_NAME: kafka
       KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka:9092
 
+  ollama:
+    image: ollama/ollama:latest
+    container_name: ollama
+    restart: unless-stopped
+    ports:
+      - "11434:11434"
+    networks:
+      - selenoid
+    volumes:
+      - ollama_data:/root/.ollama
+
 volumes:
   mysql_data:
+  ollama_data:

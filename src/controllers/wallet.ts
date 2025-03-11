@@ -4,7 +4,7 @@ import { WalletModel } from "../model/walletModel";
 import { Trasaction } from "../model/transactionModel";
 import { verifyBlockchain } from "../helpers/verifyBlockchain";
 import { loger } from "../model/logerModel";
-import { LastCourse } from "../model/lastCourseModel";
+import { LastCourse } from "../model/courseModel";
 
 
 export const get = async (req: Request, res: any, next: NextFunction) => {
@@ -39,7 +39,7 @@ export const buyCurrency = async (req: Request, res: Response, next: NextFunctio
     const {userId} = req;
     const { saleName, buyName, quantity } = req.body;
     try {
-      const courses = await LastCourse.get();
+      const courses = await LastCourse.getLastCourse();
       courses.usd = 1;
       const wallet = await WalletModel.getWallet(userId!);
       const saleValue = quantity * courses[buyName]/courses[saleName];
@@ -73,7 +73,7 @@ export const buyAllIn = async (req: Request, res: Response, next: NextFunction) 
     const {userId} = req;
     const { saleName, buyName } = req.body;
     try {
-      const courses = await LastCourse.get();
+      const courses = await LastCourse.getLastCourse();
       courses.usd = 1;
       const wallet = await WalletModel.getWallet(userId!);
       const buyValue = +wallet[saleName] * courses[saleName]/courses[buyName];
