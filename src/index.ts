@@ -3,6 +3,7 @@ import express from "express";
 import path from "path";
 import cookieParser from 'cookie-parser';
 
+import "./cron";
 import { allowOrigin, appPort, courseUpdateTimeout } from "../config/config";
 import runMigrations from "../src/model/migrationsDB";
 import user from "./routers/userRouter";
@@ -45,7 +46,6 @@ app.use("/telegram", authMiddleware, telegram);
 app.use("/chat", authMiddleware, chat);
 app.use("/tokenForecast", authMiddleware, tokenForecast);
 app.use(errors);
-
 
 (async () => {
   await runMigrations();

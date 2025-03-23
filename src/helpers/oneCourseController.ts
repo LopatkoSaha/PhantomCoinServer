@@ -3,22 +3,24 @@ import { wsPortOne } from "../../config/config";
 import { menagePreorders } from "./executionPreorders";
 import { WSServer } from "../webSocket/webSocketServer";
 import { loger } from "../model/logerModel";
-import { LastCourse } from "../model/courseModel";
-import { exchangeGenerator } from "./exchangeGenerator";
+import { Course } from "../model/courseModel";
 
-  type TCoinValues = Record<string, number>;
 
 class OneCourseController {
   private wsServer: WSServer;
 
   constructor () {
     this.wsServer = new WSServer("/oneCourse", wsPortOne, async (currency: string) => {
-      return `Your courses for ${currency}`; // Должны отдать статистику по курсу определенной валюты с начала дня(00,00,00)
-    })
+      const allDayCourses = await Course.getAllDayCourses();
+      return allDayCourses.map((item) => ({
+        course: item[currency],
+        created_at: item.created_at,
+      }));
+    });
   }
 
   public async sendCourse (currency: string, course: number) {
-    this.wsServer.send(currency, course.toString());  
+    this.wsServer.send(currency, JSON.stringify({course, created_at: new Date().toISOString()}));  
   }
 }
 

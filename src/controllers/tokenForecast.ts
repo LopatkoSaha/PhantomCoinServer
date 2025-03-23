@@ -23,7 +23,7 @@ export const set = async (req: Request, res: any, next: NextFunction): Promise<a
 
   try {
     const wallet = await WalletModel.getWallet(userId!);
-    if((+value/crossCourse) > +wallet.usd) return `У вас не достаточно денег для покупки ${value} токенов` ;
+    if((+value/crossCourse) > +wallet.usd) return `У вас не достаточно денег для покупки ${value} токенов`;
     wallet.usd = wallet.usd - (value/crossCourse);
     await WalletModel.updateWallet(userId!, wallet);
     const currentValueTokens = await TokenForecact.get(userId!);

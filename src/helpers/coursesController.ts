@@ -2,8 +2,8 @@ import { configCoins, wsPortAll } from "../../config/config";
 import { menagePreorders } from "./executionPreorders";
 import { WSServer } from "../webSocket/webSocketServer";
 import { loger } from "../model/logerModel";
-import { LastCourse } from "../model/courseModel";
-import { exchangeGenerator } from "./exchangeGenerator";
+import { Course } from "../model/courseModel";
+import { generateCurrentCourse } from "./exchangeGenerator";
 import { oneCourseController } from "./oneCourseController";
 
   type TCoinValues = Record<string, number>;
@@ -13,40 +13,37 @@ class CoursesController {
 
   constructor () {
     this.wsServer = new WSServer("/allCourses", wsPortAll, async () => {
-      return "Hello"; // Отправляем курсы всех валют на начало дня
+      const dayStartCourses: Record<string, number | boolean> = await Course.getDayStartCourses();
+      delete dayStartCourses.created_at;
+      delete dayStartCourses.id;
+      dayStartCourses.isFirst = true;
+      return dayStartCourses;
     })
   }
 
   init (courseUpdateTimeout: number) {
     setInterval(async () => {
-        this.calculate(exchangeGenerator)
+        this.calculate()
     }, courseUpdateTimeout);
 
   }
 
-  private async calculate (exchangeGenerator: (prev: number) => number) {
-    const lastCourse = await LastCourse.getLastCourse();
+  // TODO: при добавлении новой монеты в конфиг у нее нет предидущего курса
+  private async calculate () {
+    const lastCourse = await Course.getLastCourse<Record<keyof typeof configCoins, number>>();
     if(!lastCourse) {
-          const coinNames = Object.keys(configCoins);
-          const coinValues = Object.values(configCoins);
-          await LastCourse.setLastCourse(coinNames, coinValues);
+      await Course.setLastCourse(configCoins);
     } else {
       const coinNames = Object.keys(configCoins);   
-      const changedCoin = coinNames[Math.floor(Math.random() * coinNames.length)];
-      const changedValue = exchangeGenerator(+lastCourse[changedCoin]);
-      const newCours = coinNames.reduce((acc, item) => {
-      if(item === changedCoin) {
-          acc[changedCoin] = changedValue
-        } else {
-          acc[item] = +lastCourse[item]
-        }
-        return acc;
-      }, {} as TCoinValues);
-      const newCoursNames = Object.keys(newCours);
-      const newCoursValues = Object.values(newCours);
-      await LastCourse.setLastCourse(newCoursNames, newCoursValues);
+      const changedCoin = coinNames[Math.floor(Math.random() * coinNames.length)] as unknown as keyof typeof configCoins;
+      const changedValue = generateCurrentCourse(+lastCourse[changedCoin], changedCoin);
+      const newCourses = {
+        ...lastCourse,
+        [changedCoin]: changedValue,
+      };
+      await Course.setLastCourse(newCourses);
       menagePreorders([changedCoin]);
-      this.wsServer.broadcast(JSON.stringify(newCours));
+      this.wsServer.broadcast(JSON.stringify(newCourses));
       oneCourseController.sendCourse(changedCoin, changedValue);
     }
   }

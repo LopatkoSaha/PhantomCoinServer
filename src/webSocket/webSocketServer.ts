@@ -26,7 +26,7 @@ export class WSServer {
       });
     }
 
-    public send(channel: string, message: string) { //Здесь нужно отправлять месседжи только пользователям подписанным на определенный курс валют
+    public send(channel: string, message: string) {
       this.wss.clients.forEach((client) => {
         if (client.readyState === WebSocket.OPEN) {
           client.send(message);
