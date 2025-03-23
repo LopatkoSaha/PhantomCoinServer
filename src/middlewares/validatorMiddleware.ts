@@ -27,7 +27,6 @@ export function validateBody (rules: Record<string, (keyof typeof conditions)[]>
 
 }
 
-
 const conditions = {
     required: (value: any): string | null => { 
         if(value === undefined) {

@@ -1,6 +1,7 @@
 import { RowDataPacket, ResultSetHeader } from "mysql2/promise";
-import { connection } from "./database"; // Подключение к базе данных
+import { connection } from "./database";
 import { configWallet, configCoins, configCoinsImg } from "../../config/config";
+import { startPeriod, coinSettigs, calculateLimits, getRandomNumberBetween } from "../helpers/exchangeGenerator";
 
 type TColumnNames = RowDataPacket & {COLUMN_NAME: string};
 
@@ -71,7 +72,7 @@ async function runMigrations() {
       CREATE TABLE IF NOT EXISTS courses (
         id INT AUTO_INCREMENT PRIMARY KEY,
         ${currentCoins.join()},
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP
       );
     `);
 
@@ -90,7 +91,7 @@ async function runMigrations() {
       if(!currentColumnNames.includes(item)){
         await connection.query(`
           ALTER TABLE courses
-          ADD COLUMN ${item} DECIMAL(10, 2) DEFAULT 0;  
+          ADD COLUMN ${item} DECIMAL(10, 2) DEFAULT 0;
         `)
       }
     })
@@ -99,9 +100,10 @@ async function runMigrations() {
     await connection.query(`
       CREATE TABLE IF NOT EXISTS loger (
         id INT AUTO_INCREMENT PRIMARY KEY,
-        method VARCHAR(100) NOT NULL,
-        user_id VARCHAR(100),
-        body_JSON VARCHAR(100),
+        type VARCHAR(100) NOT NULL,
+        path VARCHAR(100) NOT NULL,
+        body VARCHAR(100),
+        message VARCHAR(100),
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       );
     `);
@@ -169,6 +171,57 @@ async function runMigrations() {
         expired_at TIMESTAMP NOT NULL
       );
     `);
+
+    // 12. Проверка и создание таблицы aditional_info
+    await connection.query(`
+      CREATE TABLE IF NOT EXISTS aditional_info (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        user_id INT,
+        token_forecast DECIMAL(10, 0) DEFAULT 5,
+        FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE SET NULL
+      );
+    `);
+
+    // 13. Проверка и создание таблиц courses_history
+    async function generateHistory() {
+      // Удалить таблицу courses_history
+      await connection.query(`DROP TABLE IF EXISTS courses_history`);
+      // создание таблиц courses_history
+      await connection.query(`
+        CREATE TABLE IF NOT EXISTS courses_history (
+          id INT AUTO_INCREMENT PRIMARY KEY,
+          date DATETIME,
+          name_coin VARCHAR(64),
+          open_course DECIMAL(10, 2),
+          min_course DECIMAL(10, 2),
+          max_course DECIMAL(10, 2),
+          close_course DECIMAL(10, 2)
+          );
+          `);
+      // Заполнить таблицу
+      let startDate = new Date(startPeriod);
+      const today = new Date();
+      const diffInMs = today.getTime() - startDate.getTime();
+      const days = Math.floor(diffInMs / (1000 * 60 * 60 * 24));
+
+      for(let coin of coinSettigs) {
+        let closeCourse: number = coin.closeCourse;
+        startDate = new Date(startPeriod);
+        const {volatile, splash, splashFactor} = coin;
+        for (let i = 1; i <= days; i++) {
+          i !== 1 && startDate.setDate(startDate.getDate() + 1);
+          const openCourse = closeCourse;
+          const [minCourse, maxCourse] = calculateLimits(openCourse, volatile, splash, splashFactor);
+          closeCourse = getRandomNumberBetween(minCourse, maxCourse);
+          
+          await connection.query(
+            `INSERT INTO courses_history (date, name_coin, open_course, min_course, max_course, close_course) VALUES (?, ?, ?, ?, ?, ?)`,
+            [new Date(startDate.toISOString()), coin.name, +openCourse.toFixed(2), +maxCourse.toFixed(2), +minCourse.toFixed(2), +closeCourse.toFixed(2)]
+          );
+        }
+      }
+    }
+    // generateHistory();
     
     console.log("Migration completed successfully.");
   } catch (error) {

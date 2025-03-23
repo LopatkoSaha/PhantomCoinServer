@@ -1,7 +1,6 @@
-import { RowDataPacket, ResultSetHeader } from "mysql2/promise";
+import { RowDataPacket } from "mysql2/promise";
 
 import { connection } from "./database";
-import { configWallet } from "../../config/config";
 
 type TPreorder = {
   wallet_id: number;
@@ -19,12 +18,10 @@ type TGetPreordersWallet = Pick<TPreorder, "wallet_id">;
 export class PreordersModel {
   static async getPreordersWallet(walletId: TGetPreordersWallet): Promise<[RowDataPacket[], any]> {
     try {
-        const preordersSql =
-            "SELECT * FROM preorder WHERE wallet_id = ? ORDER BY is_active DESC, created_at DESC";
-        const preorders: [RowDataPacket[], any] = await connection.query(preordersSql, [
-          walletId,
-        ]);
-
+        const preorders: [RowDataPacket[], any] = await connection.query(
+          "SELECT * FROM preorder WHERE wallet_id = ? ORDER BY is_active DESC, created_at DESC", 
+          [walletId]
+        );
       return preorders;
     } catch (error) {
       if (error instanceof Error) {
@@ -52,9 +49,11 @@ export class PreordersModel {
   }
 
   static async updatePreorder(preorderId: number, conditions: Record<string, number | string>): Promise<void> {
-    const updatePreorderSql = `UPDATE preorder SET is_active = ?, status = ?, triggered_at = ? WHERE id = ${preorderId}`;
     try {
-      await connection.query(updatePreorderSql, [conditions.is_active, conditions.status, conditions.triggered_at]);
+      await connection.query(
+        `UPDATE preorder SET is_active = ?, status = ?, triggered_at = ? WHERE id = ${preorderId}`, 
+        [conditions.is_active, conditions.status, conditions.triggered_at]
+      );
     } catch (error) {
       if (error instanceof Error) {
         throw new Error(`Failed to updated preorder id = ${preorderId}: ${error.message}`);
@@ -66,8 +65,7 @@ export class PreordersModel {
 
   static async deletePreorder (preorderId: number, walletId: number): Promise<string> {
     try {
-      const userSql = "DELETE FROM preorder WHERE id=?";
-      await connection.query(userSql, [preorderId]);
+      await connection.query("DELETE FROM preorder WHERE id=?", [preorderId]);
       return `preorder for wallet with id ${walletId} is deleted`
     } catch (error) {
       if (error instanceof Error) {

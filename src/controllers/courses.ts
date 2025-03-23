@@ -1,14 +1,31 @@
 import { Request, Response, NextFunction } from "express";
 
-import { connection } from "../model/database";
+import { Course } from "../model/courseModel";
+import { CoursesHistory } from "../model/coursesHistoryModel";
+import { redisDb } from "../redisDb/redisDb";
 
-export const courses = async (req: Request, res: Response, next: NextFunction) => {
+export const coursesLast = async (req: Request, res: Response, next: NextFunction) => {
   try {
-      const lastCourse = `SELECT * FROM courses ORDER BY created_at DESC LIMIT 1`;
-      let [courses]: [Record<string, number>, any] = await connection.query(lastCourse);
-    res.json(courses);
+      const courses = Course.getLastCourse();
+      res.json(courses);
   } catch (error) {
-    console.error("Error fetching user:", error);
-    res.status(500).json({ message: "Internal server error" });
+    next(error);
+  }
+};
+
+export const coursesAll = async (req: Request, res: Response, next: NextFunction) => {
+  const { nameCoin } = req.body;
+  try {
+    const coursesCoinRedis = await redisDb.getCoursesHistory(nameCoin);
+    if (coursesCoinRedis) {
+      res.json(coursesCoinRedis);
+    } else {
+      const courses = await CoursesHistory.getAllCoursesHistory(nameCoin);
+      await redisDb.saveCourseHistory(nameCoin, JSON.stringify(courses));
+      const coursesCoinRedis = await redisDb.getCoursesHistory(nameCoin);
+      res.json(coursesCoinRedis);
+    }
+  } catch (error) {
+    next(error);
   }
 };

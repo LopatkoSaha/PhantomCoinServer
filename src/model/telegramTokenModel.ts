@@ -1,4 +1,4 @@
-import { RowDataPacket, ResultSetHeader } from "mysql2/promise";
+import { RowDataPacket } from "mysql2/promise";
 
 import { connection } from "./database";
 
@@ -7,9 +7,10 @@ export class TelegramTokenModel {
 
     static async create(userId: number, token: string, expiredAt: Date): Promise<any> {
         try {
-            const TelegramTokenSql =
-                `INSERT INTO ${this.tableName} (user_id, token, expired_at, is_active) VALUES (?, ?, ?, ?)`;
-            await connection.query(TelegramTokenSql, [userId, token, expiredAt, 1]);
+            await connection.query(
+                `INSERT INTO ${this.tableName} (user_id, token, expired_at, is_active) VALUES (?, ?, ?, ?)`, 
+                [userId, token, expiredAt, 1]
+            );
         } catch (error) {
             if (error instanceof Error) {
                 throw new Error(`Failed to create telegram token: ${error.message}`);
@@ -21,9 +22,7 @@ export class TelegramTokenModel {
 
     static async deactivate(tokenId: number): Promise<any> {
         try {
-            const TelegramTokenSql =
-                `UPDATE ${this.tableName} SET is_active = 0 WHERE id = ?`;
-            await connection.query(TelegramTokenSql, [tokenId]);
+            await connection.query(`UPDATE ${this.tableName} SET is_active = 0 WHERE id = ?`, [tokenId]);
         } catch (error) {
             if (error instanceof Error) {
                 throw new Error(`Failed to deactivate telegram token: ${error.message}`);
@@ -35,12 +34,10 @@ export class TelegramTokenModel {
 
     static async findByToken(token: string): Promise<any> {
         try {
-            const TelegramTokenSql =
-                `SELECT * FROM ${this.tableName} WHERE token = ?`;
-                const [tokenRecord]: [RowDataPacket[], any] = await connection.query(TelegramTokenSql, [
-                    token
-                  ]);
-
+                const [tokenRecord]: [RowDataPacket[], any] = await connection.query(
+                    `SELECT * FROM ${this.tableName} WHERE token = ?`, 
+                    [token]
+                );
                   return tokenRecord;
         } catch (error) {
             if (error instanceof Error) {

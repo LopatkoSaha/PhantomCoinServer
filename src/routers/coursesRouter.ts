@@ -1,9 +1,11 @@
 import express from "express";
 
-import { courses } from "../controllers/courses";
+import { coursesLast, coursesAll} from "../controllers/courses";
 
 const router = express.Router();
 
-router.get("/get", courses);
+router.get("/get", coursesLast);
+
+router.post("/all", coursesAll);
 
 export default router;

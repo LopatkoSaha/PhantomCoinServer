@@ -1,15 +1,14 @@
 import { createClient } from "redis";
 
-class RedisDB{
+class RedisDB {
     private redisClient;
 
     constructor (private prefix: string, private ttl: number) {
         this.redisClient = createClient();
         this.redisClient.on("error", (err: any) => console.error("Redis Client Error", err));
-        this.startRedis();
     }
 
-    private async startRedis() {
+    async startRedis() {
         await this.redisClient.connect();
         console.log("🚀 Redis подключен");
     }
@@ -34,6 +33,29 @@ class RedisDB{
     public async deleteToken(token: string) {
         await this.redisClient.del(`${this.prefix}:${token}`);
         console.log("🗑️ Токен удалён");
+    }
+
+    private secondsUntilEndOfDay(): number {
+        const now = new Date();
+        const endOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59, 999);
+    
+        return Math.floor((endOfDay.getTime() - now.getTime()) / 1000);
+    }
+    public async saveCourseHistory(nameCoin: string, history: string) {
+        const timeSave = this.secondsUntilEndOfDay();
+        await this.redisClient.set(`${nameCoin}`, `${history}`, { EX: timeSave });
+        console.log(`🔒 История для ${nameCoin} сохранена в redis`);
+    }
+  
+    public async getCoursesHistory(nameCoin: string) {
+        const data = await this.redisClient.get(`${nameCoin}`);
+
+        return data ? JSON.parse(data) : null;
+    }
+  
+    public async deleteCoursesHistory(nameCoin: string) {
+        await this.redisClient.del(`${nameCoin}`);
+        console.log(`🗑️ История ${nameCoin} удалена из redis`);
     }
 }
 

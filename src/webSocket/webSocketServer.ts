@@ -1,21 +1,32 @@
 import WebSocket, {WebSocketServer} from "ws";
-import { wsPort } from "../../config/config"
 
-class WSServer {
+export class WSServer {
     private wss: WebSocketServer;
 
-    constructor () {
-      this.wss = new WebSocketServer({ port: wsPort });
-      this.wss.on("connection", (ws) => this.connection(ws));
-      console.log(`🚀 WebSocket сервер запущен на ws://localhost:${wsPort}`);
+    constructor (private path: string, port: number, private welcomeCb: (channel: string) => Promise<any>) {
+      this.wss = new WebSocketServer({ port, path });
+      this.wss.on("connection", (ws, req) => this.connection(ws, req));
+      console.log(`🚀 WebSocket сервер ${this.path} запущен на ws://localhost:${port}`);
     }
 
-    private connection(ws: WebSocket) {
-        console.log("🔗 Клиент подключился");
+    private async connection(ws: WebSocket, req: any) {
+        const channel = req.url.split("?")[1]?.split("=")[1];
+      
+        ws.send(JSON.stringify(await this.welcomeCb(channel)));
+        console.log(`🔗 Клиент подключился к ${this.path}`);
         ws.on("close", () => this.close(ws));
       }
-    
-    public send(message: string) {
+      // Отправляет всем
+    public broadcast(message: string) {
+      this.wss.clients.forEach((client) => {
+        
+        if (client.readyState === WebSocket.OPEN) {
+          client.send(message);
+        }
+      });
+    }
+
+    public send(channel: string, message: string) {
       this.wss.clients.forEach((client) => {
         if (client.readyState === WebSocket.OPEN) {
           client.send(message);
@@ -24,8 +35,6 @@ class WSServer {
     }
     
     private close(ws: WebSocket) {
-      console.log("❌ Клиент отключился");
+      console.log(`❌ Клиент отключился от ${this.path}`);
     }
 }
-
-export const wsServer = new WSServer();

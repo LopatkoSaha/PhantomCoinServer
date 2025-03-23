@@ -45,10 +45,15 @@ export class UserModel {
         }`
       );
     }
-    const userSql =
-      "INSERT INTO users (name, email, password, walletId, telegram_id) VALUES (?, ?, ?, ?, ?)";
     try {
-      await connection.query(userSql, [name, email, hash, walletId, null]);
+      await connection.query(
+        "INSERT INTO users (name, email, password, walletId, telegram_id) VALUES (?, ?, ?, ?, ?)", 
+        [name, email, hash, walletId, null]
+      );
+      await connection.query(
+        "INSERT INTO aditional_info (user_id, token_forecast) VALUES (?, ?)", 
+        [walletId, 5]
+      );
     } catch (error) {
       if (error instanceof Error) {
         throw new Error(`Failed to create user: ${error.message}`);
@@ -59,9 +64,7 @@ export class UserModel {
   }
 
   static async getUser(id: number): Promise<User | null> {
-    const sql = "SELECT * FROM users WHERE id=?";
-    const [user] = await connection.query<User[]>(sql, [id]); 
-
+    const [user] = await connection.query<User[]>("SELECT * FROM users WHERE id=?", [id]); 
     if (!user) {
       console.log(`User with id ${id} not found`);
       return null;
@@ -70,9 +73,7 @@ export class UserModel {
   }
 
   static async getUserByTelegramId(telegramId: number): Promise<User | null> {
-    const sql = "SELECT * FROM users WHERE telegram_id = ?";
-    const [user] = await connection.query<User[]>(sql, [telegramId]); 
-
+    const [user] = await connection.query<User[]>("SELECT * FROM users WHERE telegram_id = ?", [telegramId]); 
     if (!user) {
       console.log(`User with telergram id ${telegramId} not found`);
       return null;
@@ -81,8 +82,7 @@ export class UserModel {
   }
 
   static async existUser(email: string): Promise<boolean> {
-    const sql = "SELECT * FROM users WHERE email=?";
-    const [user] = await connection.query<User[]>(sql, [email]);
+    const [user] = await connection.query<User[]>("SELECT * FROM users WHERE email=?", [email]);
     return !user ? true : false;
   }
 
@@ -90,10 +90,11 @@ export class UserModel {
   static async updateUser(id: number, data: TData): Promise<void> {
     const { name, email, password, telegram_id } = data;
     const hash = bcrypt.hashSync(password, 8);
-    const sql =
-      "UPDATE users SET name = ?, email = ?, password = ?, telegram_id = ? WHERE id = ?";
     try {
-      await connection.query(sql, [name, email, hash, telegram_id ? telegram_id : null, id]);
+      await connection.query(
+        "UPDATE users SET name = ?, email = ?, password = ?, telegram_id = ? WHERE id = ?", 
+        [name, email, hash, telegram_id ? telegram_id : null, id]
+      );
     } catch (error) {
       if (error instanceof Error) {
         throw new Error(`Failed to create user: ${error.message}`);
@@ -104,10 +105,11 @@ export class UserModel {
   }
 
   static async updateTelegramId(userId: number, telegramId: string): Promise<void> {
-    const sql =
-      "UPDATE users SET telegram_id = ? WHERE id = ?";
     try {
-      await connection.query(sql, [telegramId, userId]);
+      await connection.query(
+        "UPDATE users SET telegram_id = ? WHERE id = ?", 
+        [telegramId, userId]
+      );
     } catch (error) {
       if (error instanceof Error) {
         throw new Error(`Failed to update telegram id: ${error.message}`);
@@ -119,10 +121,9 @@ export class UserModel {
 
   static async deleteUser(id: number): Promise<void> {
     try {
-      const userSql = "DELETE FROM users WHERE id=?";
-      const walletSql = "DELETE FROM wallets WHERE id=?";
-      await connection.query(userSql, [id]);
-      await connection.query(walletSql, [id]);
+      await connection.query("DELETE FROM users WHERE id=?", [id]);
+      await connection.query("DELETE FROM wallets WHERE id=?", [id]);
+      await connection.query("DELETE FROM aditional_info WHERE id=?", [id]);
     } catch (error) {
       if (error instanceof Error) {
         throw new Error(`Failed to create user: ${error.message}`);
