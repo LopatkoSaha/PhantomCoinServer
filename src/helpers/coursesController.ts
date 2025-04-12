@@ -6,14 +6,12 @@ import { Course } from "../model/courseModel";
 import { generateCurrentCourse } from "./exchangeGenerator";
 import { oneCourseController } from "./oneCourseController";
 
-  type TCoinValues = Record<string, number>;
-
 class CoursesController {
   private wsServer: WSServer;
 
   constructor () {
     this.wsServer = new WSServer("/allCourses", wsPortAll, async () => {
-      const dayStartCourses: Record<string, number | boolean> = await Course.getDayStartCourses();
+      const dayStartCourses: Record<string, any> = await Course.getDayStartCourses();
       delete dayStartCourses.created_at;
       delete dayStartCourses.id;
       dayStartCourses.isFirst = true;
