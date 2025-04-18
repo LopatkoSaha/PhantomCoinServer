@@ -12,9 +12,11 @@ class CoursesController {
   constructor () {
     this.wsServer = new WSServer("/allCourses", wsPortAll, async () => {
       const dayStartCourses: Record<string, any> = await Course.getDayStartCourses();
-      delete dayStartCourses.created_at;
-      delete dayStartCourses.id;
-      dayStartCourses.isFirst = true;
+      if(dayStartCourses) {
+        delete dayStartCourses.created_at;
+        delete dayStartCourses.id;
+        dayStartCourses.isFirst = true;
+      }
       return dayStartCourses;
     })
   }

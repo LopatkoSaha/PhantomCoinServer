@@ -18,6 +18,7 @@ import adminGames from "./routers/gameRouter/adminGamesRouter";
 import optionsGames from "./routers/gameRouter/optionsGamesRouter";
 import minesweeper from "./routers/gameRouter/minesweeperRouter";
 import bullsCows from "./routers/gameRouter/bullsCowsRouter";
+import  checkIQ from "./routers/gameRouter/checkIQRouter";
 import tokenForecast from "./routers/tokenForecastRouter";
 import { errors } from "./routers/errorRouter";
 import { authMiddleware } from "./middlewares/authMiddleware";
@@ -53,6 +54,7 @@ app.use("/games/admin", authMiddleware, adminGames);
 app.use("/games/options", authMiddleware, optionsGames);
 app.use("/games/minesweeper", authMiddleware, minesweeper);
 app.use("/games/bullsCows", authMiddleware, bullsCows);
+app.use("/games/checkIQ", authMiddleware, checkIQ);
 app.use(errors);
 
 (async () => {

@@ -20,11 +20,11 @@ export class GamesOptionsModel {
 
     static async getOneGameOptions (gameId: number, nameComplexity: string): Promise<any> {
         try {
-          const oneGameInfo: [RowDataPacket[], any] = await connection.query(
+          const oneGameInfo: RowDataPacket[] = await connection.query(
             "SELECT * FROM games_options WHERE game_id = ? AND name_complexity = ?",  
             [gameId, nameComplexity]
           );
-          if (oneGameInfo[0].length === 0) {
+          if (oneGameInfo.length === 0) {
             return null;
           }
             return oneGameInfo[0];

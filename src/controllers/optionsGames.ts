@@ -29,12 +29,8 @@ export const createGameOptions = async (req: Request, res: Response, next: NextF
     try {
         const {gameId, nameComplexity, bonusCoefficient, discriptionComplexity, sortOrder, gameConfig} = req.body;
         const oneGameOptions = await GamesOptionsModel.getOneGameOptions(gameId, nameComplexity);
-        if (oneGameOptions[0].name_complexity === nameComplexity) {
+        if (oneGameOptions && oneGameOptions.name_complexity === nameComplexity) {
             res.json({ message: `Game options name_complexity ${nameComplexity} about game with game_id = ${gameId} already exist` });
-            return;
-        }
-        if (oneGameOptions[0].sort_order === sortOrder) {
-            res.json({ message: `Game options sort_order ${sortOrder} about game with game_id = ${gameId} already exist` });
             return;
         }
         await GamesOptionsModel.createGameOptions(gameId, nameComplexity, bonusCoefficient, discriptionComplexity, sortOrder, gameConfig);

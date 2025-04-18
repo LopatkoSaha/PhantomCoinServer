@@ -30,7 +30,7 @@ export const createGame = async (req: Request, res: Response, next: NextFunction
     const {nameGame, discription} = req.body;
     try {
         const gameInfo = await GamesModel.getGameInfo(nameGame);
-        if (gameInfo.name === nameGame) {
+        if (gameInfo?.name === nameGame) {
             res.json({ message: `Game with name ${nameGame} already exist`});
             return;
         };
