@@ -21,10 +21,9 @@ export class WalletModel {
   }
   
   static async updateWallet(userId: number, coins: Record<string, number>): Promise<void> {
-
     let coinNames: Array<string> = [];
     let coinValues: Array<number> = [];
-    
+
     Object.entries(coins).forEach(([name, value]) => {
       if(Object.keys(configWallet).includes(name)){
         coinNames.push(`${name} = ?`);
@@ -32,7 +31,8 @@ export class WalletModel {
       }
     });
     try {
-      await connection.query(`UPDATE wallets SET ${coinNames.join()} WHERE id = ${userId}`, coinValues);
+      const query = `UPDATE wallets SET ${coinNames.join(", ")} WHERE id = ${userId}`;
+      await connection.query(query, coinValues);
     } catch (error) {
       if (error instanceof Error) {
         throw new Error(`Failed to updated wallet: ${error.message}`);

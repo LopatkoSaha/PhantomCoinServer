@@ -2,7 +2,7 @@ import cron from "node-cron";
 import { CoursesHistory } from "./model/coursesHistoryModel";
 import { sortedCoursesByDays } from "./helpers/sortedCoursesByDays";
 
-cron.schedule("0 0 * * *", () => {
+cron.schedule("7 0 * * *", () => {
   sortedDb();
 });
 

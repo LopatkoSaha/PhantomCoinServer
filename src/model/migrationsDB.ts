@@ -222,6 +222,47 @@ async function runMigrations() {
       }
     }
     // generateHistory();
+
+    // await connection.query(`DROP TABLE IF EXISTS games_sessions`);
+
+    // Проверяем наличие таблицы games, если ее нет то создаем, с полями:
+    await connection.query(`
+        CREATE TABLE IF NOT EXISTS games (
+          id INT AUTO_INCREMENT PRIMARY KEY,
+          name VARCHAR(64),
+          discription TEXT
+        );
+    `);
+
+    // Проверяем наличие таблицы games_sessions, если ее нет то создаем, с полями:
+    await connection.query(`
+      CREATE TABLE IF NOT EXISTS games_sessions (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        game_id INT UNSIGNED NOT NULL,
+        user_id INT UNSIGNED NOT NULL,
+        state TEXT,
+        status ENUM('win', 'loss', 'active') NOT NULL,
+        payout_value DECIMAL(10, 2) DEFAULT NULL,
+        payout_currency VARCHAR(64) DEFAULT NULL,
+        bid_value DECIMAL(10, 2) DEFAULT NULL,
+        create_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        update_at TIMESTAMP
+      );
+    `);
+
+    // Проверяем наличие таблицы games_options, если ее нет то создаем, с полями:
+    await connection.query(`
+      CREATE TABLE IF NOT EXISTS games_options (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        game_id INT UNSIGNED NOT NULL,
+        name_complexity TEXT,
+        bonus_coefficient DECIMAL(10, 2) DEFAULT NULL,
+        discription_complexity VARCHAR(255),
+        sort_order INT UNSIGNED NOT NULL,
+        game_config TEXT,
+        create_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
+    `);
     
     console.log("Migration completed successfully.");
   } catch (error) {

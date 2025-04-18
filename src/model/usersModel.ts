@@ -126,7 +126,7 @@ export class UserModel {
       await connection.query("DELETE FROM aditional_info WHERE id=?", [id]);
     } catch (error) {
       if (error instanceof Error) {
-        throw new Error(`Failed to create user: ${error.message}`);
+        throw new Error(`Failed to delete user: ${error.message}`);
       } else {
         throw new Error("An unknown error occurred");
       }
