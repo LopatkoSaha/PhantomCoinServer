@@ -1,4 +1,4 @@
-import { RowDataPacket, ResultSetHeader } from "mysql2/promise";
+import { RowDataPacket } from "mysql2/promise";
 
 import { connection } from "./database";
 
@@ -50,16 +50,48 @@ export class GamesOptionsModel {
     }
   }
 
-    static async setBonusCoefficient (id: number, bonusCoefficient: number): Promise<any>  {
-        try {
-            await connection.query(`UPDATE games_options SET bonus_coefficient = ? WHERE id = ?`,
-                [bonusCoefficient, id]);
-            return;
-        } catch (error) {
-            if (error) {
-            throw new Error(`Failed to bonus coefficient: ${error}`);
-            }
+  static async updataGameOptions (id: number, nameComplexity: string, bonusCoefficient: number, discriptionComplexity: string, sortOrder: number, gameConfig: string): Promise<any>  {
+    try {
+        await connection.query(
+            `UPDATE games_options 
+            SET name_complexity = ?,
+              bonus_coefficient = ?,
+              discription_complexity = ?,
+              sort_order = ?,
+              game_config = ?
+            WHERE id = ?`, 
+            [nameComplexity, bonusCoefficient, discriptionComplexity, sortOrder, JSON.stringify(gameConfig), id]
+        );
+    } catch (error) {
+        if (error instanceof Error) {
+            throw new Error(`Failed to updated game info: ${error.message}`);
+        } else {
+            throw new Error("An unknown error occurred");
         }
     }
+  }
+
+  static async setBonusCoefficient (id: number, bonusCoefficient: number): Promise<any>  {
+      try {
+          await connection.query(`UPDATE games_options SET bonus_coefficient = ? WHERE id = ?`,
+              [bonusCoefficient, id]);
+          return;
+      } catch (error) {
+          if (error) {
+          throw new Error(`Failed to bonus coefficient: ${error}`);
+          }
+      }
+  }
+
+  static async deleteOptions (id: number): Promise<any>  {
+    try {
+        await connection.query(`DELETE FROM games_options WHERE id = ?`,[id]);
+        return;
+    } catch (error) {
+        if (error) {
+        throw new Error(`Failed to delete options: ${error}`);
+        }
+    }
+  }
 
 }
