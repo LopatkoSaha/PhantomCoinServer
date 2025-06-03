@@ -77,7 +77,6 @@ src/
 ├── redisDb/          # Настройки Redis
 ├── routes/           # Определение маршрутов API
 ├── telegram/         # Взаимодействие с Telegram
-├── tasks/            # Cron-задачи (node-cron)
 ├── types/            # Общие интерфейсы и типы
 ├── webSocket/        # WebSocket-сервер
 ├── cron.ts           # Cron-задачи (node-cron)
