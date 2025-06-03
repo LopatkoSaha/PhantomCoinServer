@@ -40,11 +40,31 @@ export const createGameOptions = async (req: Request, res: Response, next: NextF
     }
 };
 
+export const updataGameOptions = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+        const {id, nameComplexity, bonusCoefficient, discriptionComplexity, sortOrder, gameConfig} = req.body;
+        await GamesOptionsModel.updataGameOptions(id, nameComplexity, bonusCoefficient, discriptionComplexity, sortOrder, gameConfig);
+        res.json({ message: `Game options ${nameComplexity} is updated` });
+    } catch (error) {
+        next(error);
+    }
+};
+
 export const setBonusCoefficient = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
         const {id, bonusCoefficient} = req.body;
         await GamesOptionsModel.setBonusCoefficient(id, bonusCoefficient);
         res.json({ message: `Bonus coefficient for game with id = ${id} is seted` });
+    } catch (error) {
+        next(error);
+    }
+};
+
+export const deleteOptions = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+        const {id} = req.body;
+        await GamesOptionsModel.deleteOptions(id);
+        res.json({ message: `Options is deleted` });
     } catch (error) {
         next(error);
     }

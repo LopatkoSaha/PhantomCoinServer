@@ -4,6 +4,19 @@ import { GamesModel } from "../model/gamesModel";
 import { GamesOptionsModel } from "../model/gamesOptionsModel";
 import { loger } from "../model/logerModel";
 
+export const getAllGamesInfo = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+        const info = await GamesModel.getAllGamesInfo();
+        if (!info) {
+            loger.warning({ path: req.path, body: req.body, message: 'Games info not found' });
+            res.json(null);
+            return;
+        }
+        res.json(info);
+    } catch (error) {
+        next(error);
+    }
+};
 
 export const getGameInfo = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
@@ -26,7 +39,7 @@ export const getGameInfo = async (req: Request, res: Response, next: NextFunctio
     }
 };
 
-export const createGame = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+export const createGameInfo = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     const {nameGame, discription} = req.body;
     try {
         const gameInfo = await GamesModel.getGameInfo(nameGame);
@@ -34,7 +47,7 @@ export const createGame = async (req: Request, res: Response, next: NextFunction
             res.json({ message: `Game with name ${nameGame} already exist`});
             return;
         };
-        await GamesModel.createGame(nameGame, discription);
+        await GamesModel.createGameInfo(nameGame, discription);
         res.json({ message: `Game info about ${nameGame} is created` });
     } catch (error) {
         next(error);

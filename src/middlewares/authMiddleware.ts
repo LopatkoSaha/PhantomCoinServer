@@ -22,7 +22,7 @@ export const authMiddleware = (req: Request, res: Response, next: NextFunction):
       req.userId = (decoded as JwtPayload).id as number;
       next();
     } else {
-      loger.warning({ path: req.path, body: req.body, message: "Invalid token payload'" });
+      loger.warning({ path: req.path, body: req.body, message: "Invalid token payload" });
       res.status(401).send({ message: 'Invalid token payload' });
     }
   } catch (error) {

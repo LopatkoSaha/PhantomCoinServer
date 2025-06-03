@@ -1,5 +1,3 @@
-import { RowDataPacket } from "mysql2/promise";
-
 import { connection } from "../model/database";
 import { calculateHash } from "./calculateHash";
 

@@ -1,8 +1,21 @@
-import { RowDataPacket, ResultSetHeader } from "mysql2/promise";
+import { RowDataPacket } from "mysql2/promise";
 
 import { connection } from "./database";
 
 export class GamesModel {
+
+  static async getAllGamesInfo (): Promise<any> {
+    try {
+      const gameInfo: RowDataPacket[] = await connection.query(
+        "SELECT * FROM games",  
+      );
+        return gameInfo;
+    } catch (error) {
+      if (error) {
+        throw new Error(`Failed to geted games session forecast: ${error}`);
+      }
+    }
+  }
 
   static async getGameInfo (nameGame: string): Promise<any> {
       try {
@@ -18,7 +31,7 @@ export class GamesModel {
       }
     }
 
-  static async createGame (nameGame: string, discription: string): Promise<any>  {
+  static async createGameInfo (nameGame: string, discription: string): Promise<any>  {
     try {
         await connection.query(
             `INSERT INTO games (name, discription) VALUES (?, ?)`, 

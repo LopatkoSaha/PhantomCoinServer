@@ -8,11 +8,11 @@ type TColumnNames = RowDataPacket & {COLUMN_NAME: string};
 async function runMigrations() {
 
   const containWallet = Object.entries(configWallet).map(([name, value]) => {
-    return `${name} DECIMAL(10, 2) DEFAULT "${value}"`;
+    return `${name} DECIMAL(20, 2) DEFAULT "${value}"`;
   });
 
   const currentCoins  = Object.entries(configCoins).map(([name, value]) => {
-    return `${name} DECIMAL(10, 2) DEFAULT ${value}`;
+    return `${name} DECIMAL(20, 2) DEFAULT ${value}`;
   });
 
   const coinsImg  = Object.entries(configCoinsImg).map(([name, value]) => {
@@ -48,7 +48,7 @@ async function runMigrations() {
       if(!currentWalletColumnNames.includes(item)){
         await connection.query(`
           ALTER TABLE wallets
-          ADD COLUMN ${item} DECIMAL(10, 2) DEFAULT 0;  
+          ADD COLUMN ${item} DECIMAL(20, 2) DEFAULT 0;  
         `)
       }
     })
@@ -58,6 +58,7 @@ async function runMigrations() {
       CREATE TABLE IF NOT EXISTS users (
         id INT AUTO_INCREMENT PRIMARY KEY,
         name VARCHAR(100) NOT NULL,
+        is_active TINYINT(1) NOT NULL CHECK (is_active IN (0, 1)),
         email VARCHAR(100) NOT NULL UNIQUE,
         password VARCHAR(255) NOT NULL,
         walletId INT,
@@ -65,6 +66,11 @@ async function runMigrations() {
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         FOREIGN KEY (walletId) REFERENCES wallets(id) ON DELETE SET NULL
       );
+    `);
+
+    await connection.query(`
+      ALTER TABLE users
+      ADD COLUMN is_active TINYINT(1) NOT NULL DEFAULT 1 CHECK (is_active IN (0, 1))
     `);
 
     // 5. Проверка и создание таблицы courses
@@ -91,7 +97,7 @@ async function runMigrations() {
       if(!currentColumnNames.includes(item)){
         await connection.query(`
           ALTER TABLE courses
-          ADD COLUMN ${item} DECIMAL(10, 2) DEFAULT 0;
+          ADD COLUMN ${item} DECIMAL(20, 2) DEFAULT 0;
         `)
       }
     })
@@ -137,7 +143,7 @@ async function runMigrations() {
         currency_sell ENUM(${Object.keys(configWallet).map((item)=>`'${item}'`).join()}) NOT NULL,
         currency_buy ENUM(${Object.keys(configWallet).map((item)=>`'${item}'`).join()}) NOT NULL,
         value_buy DECIMAL(10, 2) DEFAULT NULL,
-        is_all_in TINYINT(1) NOT NULL CHECK (is_active IN (0, 1)),
+        is_all_in TINYINT(1) NOT NULL CHECK (is_all_in IN (0, 1)),
         trigger_course DECIMAL(10, 2) DEFAULT NULL,
         is_active TINYINT(1) NOT NULL CHECK (is_active IN (0, 1)),
         status ENUM('pending', 'success', 'fail') NOT NULL,
@@ -192,10 +198,10 @@ async function runMigrations() {
           id INT AUTO_INCREMENT PRIMARY KEY,
           date DATETIME,
           name_coin VARCHAR(64),
-          open_course DECIMAL(10, 2),
-          min_course DECIMAL(10, 2),
-          max_course DECIMAL(10, 2),
-          close_course DECIMAL(10, 2)
+          open_course DECIMAL(20, 2),
+          min_course DECIMAL(20, 2),
+          max_course DECIMAL(20, 2),
+          close_course DECIMAL(20, 2)
           );
           `);
       // Заполнить таблицу
@@ -257,10 +263,22 @@ async function runMigrations() {
         game_id INT UNSIGNED NOT NULL,
         name_complexity TEXT,
         bonus_coefficient DECIMAL(10, 2) DEFAULT NULL,
-        discription_complexity VARCHAR(255),
-        sort_order INT UNSIGNED NOT NULL,
-        game_config TEXT,
+        discription_complexity MEDIUMTEXT,
+        sort_order DECIMAL(10, 2) NOT NULL,
+        game_config MEDIUMTEXT,
         create_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
+    `);
+
+    // Проверяем наличие таблицы admin, если ее нет то создаем, с полями:
+    await connection.query(`
+      CREATE TABLE IF NOT EXISTS admin (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        user_id INT UNSIGNED NOT NULL,
+        is_active TINYINT(1) NOT NULL CHECK (is_active IN (0, 1)),
+        users TINYINT(1) NOT NULL CHECK (users IN (0, 1)),
+        wallets TINYINT(1) NOT NULL CHECK (wallets IN (0, 1)),
+        games TINYINT(1) NOT NULL CHECK (games IN (0, 1))
       );
     `);
     

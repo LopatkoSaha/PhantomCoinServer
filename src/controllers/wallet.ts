@@ -21,6 +21,19 @@ export const get = async (req: Request, res: any, next: NextFunction) => {
   }
 };
 
+export const getAllInfo = async (req: Request, res: any, next: NextFunction) => {
+  try {
+    const wallets = await WalletModel.getAllWalletsInfo();
+    if (!wallets) {
+      loger.warning({ path: req.path, body: req.body, message: "Wallets not found" });
+      return res.status(404).json({ message: "Wallets not found" });
+    }
+    res.json(wallets);
+  } catch (error) {
+    next(error);
+  }
+};
+
 export const update = async (req: Request, res: Response, next: NextFunction) => {
     const {userId} = req;
     const { coins } = req.body;
@@ -33,6 +46,19 @@ export const update = async (req: Request, res: Response, next: NextFunction) =>
     } catch (error) {
       next(error);
     }
+};
+
+export const updataAdmin = async (req: Request, res: Response, next: NextFunction) => {
+  const { id, coins } = req.body;
+  try {
+    await WalletModel.updateWallet(id!, coins);
+    loger.info({ path: req.path, body: req.body, message: `Wallet user with id ${id} is updated` });
+    res
+      .status(201)
+      .json({ message: `Wallet user with id ${id} is updated` });
+  } catch (error) {
+    next(error);
+  }
 };
 
 export const buyCurrency = async (req: Request, res: Response, next: NextFunction) => {
